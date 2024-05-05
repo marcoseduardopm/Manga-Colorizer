@@ -1,16 +1,21 @@
 const urlInput = document.getElementById("url-input-field");
 const colTolInput = document.getElementById("coltol-input-field");
+const nameTolInput = document.getElementById("name-input-field");
+const charTolInput = document.getElementById("char-input-field");
 const colStrideInput = document.getElementById("colstride-input-field");
 const websitesInput = document.getElementById("websites-input-field");
 const addSiteButton = document.getElementById("addsite");
 const runButton = document.getElementById("run");
+const stopButton = document.getElementById("stop");
 const testApiButton = document.getElementById("test-api");
 
-chrome.storage.local.get(["apiURL", "colTol", "colStride", "websites"], (result) => {
-    urlInput.value = result.apiURL || "";
-    colTolInput.value = result.colTol || "30";
+chrome.storage.local.get(["apiURL", "colTol", "nameStr", "charStr", "colStride", "websites"], (result) => {
+    urlInput.value = result.apiURL || "https://127.0.0.1:5000";
+    colTolInput.value = result.colTol || "180";
+    nameTolInput.value = result.nameStr || "";
+    charTolInput.value = result.charStr || "";
     colStrideInput.value = result.colStride || "4";
-    websitesInput.value = result.websites || "mangadex.org/chapter\nchapmanganelo.com\nfanfox.net";
+    websitesInput.value = result.websites || "mangadex.org\nchapmanganelo.com\nfanfox.net";
     const sitesArray = websitesInput.value.split("\n");
     websitesInput.rows = sitesArray.length + 1
     websitesInput.cols = sitesArray.reduce((len, str) => { return Math.max(len, str.length) }, 25);
@@ -41,8 +46,25 @@ runButton.addEventListener("click",() => {
     chrome.storage.local.set({
         apiURL: urlInput.value.trim(),
         colTol: colTolInput.value.trim(),
+        nameStr: nameTolInput.value.trim(),
+        charStr: charTolInput.value.trim(),
         colStride: colStrideInput.value.trim(),
+        running: true,
         websites: websitesInput.value.trim(),
         currentTab: true,
-    }); 
+    });
+})
+
+
+stopButton.addEventListener("click",() => {
+    chrome.storage.local.set({
+        apiURL: urlInput.value.trim(),
+        colTol: colTolInput.value.trim(),
+        nameStr: nameTolInput.value.trim(),
+        charStr: charTolInput.value.trim(),
+        colStride: colStrideInput.value.trim(),
+        running: false,
+        websites: websitesInput.value.trim(),
+        currentTab: true,
+    });
 })

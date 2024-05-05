@@ -1,4 +1,5 @@
 from os import error
+import os
 from flask import Flask, request, send_from_directory, url_for, jsonify, abort
 from flask_cors import CORS
 
@@ -17,11 +18,17 @@ CORS(app)
 def index():
     return 'Manga Colorizer is Up and Running!'
 
+        
 @app.route('/colorize-image-data', methods=['POST'])
 def colorize_image_data():
     img_format = 'PNG'
     req_json = request.get_json()
+    img_name = ((req_json.get('imgName')).rsplit("?",1))[0] #obtain only the part before ? (if there is a ?)
+    if (img_name.lower().find(".png") == -1):
+        img_name = img_name + ".png" 
     img_size = req_json.get('imgWidth')
+    name_str = req_json.get('nameStr') #title name
+    char_str = req_json.get('charStr')
     if (img_size > 0):
         img_size = closestDivisibleBy32(img_size)
     else:
@@ -46,6 +53,7 @@ def colorize_image_data():
         if (coloredness > 1):
             # abort(415, description=f'Image already colored: {coloredness} > 1')
             response = jsonify({'msg': f'Image already colored: {coloredness} > 1'})
+            save_image(img_name, name_str, char_str, image)
             return response
 
     class Configuration:
@@ -56,7 +64,7 @@ def colorize_image_data():
             self.denoiser = True
             self.denoiser_sigma = 25
             self.size = img_size
-            self.use_cached = False
+            self.use_cached = True
 
     args = Configuration()
 
@@ -66,12 +74,24 @@ def colorize_image_data():
         device = 'cpu'
         
     colorizer = MangaColorizator(device, args.generator, args.extractor)   
-    color_image_data64 = colorize_image(image, colorizer, args)
-
+    color_image = colorize_image(image, colorizer, args)
+    color_image_data64 = img_to_base64_str(color_image)
+    
+    save_image(img_name, name_str, char_str, color_image)
+    
     response = jsonify({'colorImgData': color_image_data64})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
+def save_image(img_name, name_str, char_str, color_image): #image name, title name, charapter
+    
+    if (name_str != '' and char_str != ''):
+        #colorization_path = os.path.join(f'manga/{name_str}/{char_str}/colored')
+        colorization_path = os.path.join(f'manga/{name_str}/{char_str}')
+        os.makedirs(colorization_path, exist_ok=True)
+        save_path = os.path.join(colorization_path, img_name)
+        plt.imsave(save_path, color_image)
+        
 def retrieve_image_binary(orig_req, url):
     # print("Original headers", orig_req.headers)
     headers={
@@ -94,8 +114,9 @@ def retrieve_image_binary(orig_req, url):
 
 def colorize_image(image, colorizer, args):
     colorizer.set_image((np.array(image).astype('float32') / 255), args.size, args.denoiser, args.denoiser_sigma)
-    colorized_img = colorizer.colorize()
-    return (img_to_base64_str(colorized_img))
+    #colorized_img = colorizer.colorize()
+    #return (img_to_base64_str(colorized_img))
+    return colorizer.colorize()
 
 # def img_from_base64(img64):
 #     orig_image_binary = base64.decodebytes(bytes(img64, encoding='utf-8'))

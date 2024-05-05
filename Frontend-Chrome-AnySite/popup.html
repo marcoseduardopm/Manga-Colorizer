@@ -19,6 +19,14 @@
       <input class="text-input" type="number" min="0" max="255" id="coltol-input-field" title="Images with colors farther from gray than this will not be recolored"/>
     </div>
     <div class="settings-container">
+      <label class="setting-label" for="name-input-field">Title Name (optional)</label>
+      <input class="text-input" type="text" min="0" max="255" id="name-input-field" title="Fill in order to specify the name of the title in order to save at the server the images. Will be automatically filled base on the folder names if left in blank."/>
+    </div>
+    <div class="settings-container">
+      <label class="setting-label" for="char-input-field">Chapter (optional)</label>
+      <input class="text-input" type="text" min="0" max="255" id="char-input-field" title="Fill in order to specify the name of the chapter in order to save at the server the images. Will be automatically filled base on the folder names if left in blank."/>
+    </div>
+    <div class="settings-container">
       <label class="setting-label" for="colstride-input-field">Color Stride</label>
       <input class="text-input" type="number" min="0" max="255" id="colstride-input-field" title="Skip this many pixels at edges and between pixels when checking for color" />
     </div>
@@ -30,7 +38,10 @@
       <button id="addsite" display="none">Add</button>
     </div>
     <div class="settings-container">
-      <button id="run">Colorize!</button>
+      <button id="run">Run Colorize</button>
+    </div>
+    <div class="settings-container">
+      <button id="stop">Stop Colorize</button>
     </div>
   </div>
 </div>
